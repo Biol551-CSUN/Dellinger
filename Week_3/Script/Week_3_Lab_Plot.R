@@ -22,7 +22,7 @@ library(ggplot2)
 glimpse(penguins)
 penguins<-na.omit(penguins)
 
-ggplot(data=penguins, 
+plot <- ggplot(data=penguins, 
        mapping=aes(x=species,
                    y=body_mass_g,
                    fill=sex)) + #sex
@@ -35,4 +35,4 @@ ggplot(data=penguins,
   theme_bw()+
   theme(axis.title = element_text(size = 20),
         panel.background = element_rect(fill = "white")) 
-  
+  ggsave(here('Week_3/output', "Box_Plot_Figure.png"), plot) #save plot to an output folder

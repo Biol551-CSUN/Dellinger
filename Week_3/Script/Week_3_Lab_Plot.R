@@ -16,6 +16,7 @@ devtools::install_github("dill/beyonce")
 library(palmerpenguins)
 library(tidyverse)
 library(here)
+library(ggplot2)
 
 #Data Visualization
 glimpse(penguins)

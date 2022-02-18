@@ -46,24 +46,3 @@ ggsave(here('Week_4/Output', "Box_Plot_Figure.png"), plot) #save plot to an outp
   
   
 
-ggplot(data=penguins, 
-               mapping=aes(x=species,
-                           y=body_mass_g,
-                           fill=sex)) + #sex
-  geom_boxplot(outlier.shape = NA)+
-  labs(title = "Body Mass & Biological Sex of Penguins",
-       subtitle = "Differences for Adelie, Chinstrap, and Gentoo Penguins",
-       x = "Species", y = "Body Mass (g)",
-       fill = "Sex",
-       caption = "Source: Palmer Station LTER / palmerpenguins package")+
-  theme_bw()+
-  theme(axis.title = element_text(size = 20),
-        panel.background = element_rect(fill = "white")) 
-
-
-
-
-  group_by(island) %>% #summarizing penguin data by island (must be placed before summarize) 
-  summarize(mean_bill_length = mean(bill_length_mm, na.rm = TRUE),
-            max_bill_length = max(bill_length_mm, na.rm=TRUE))
-  

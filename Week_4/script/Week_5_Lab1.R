@@ -35,8 +35,39 @@ FullData_left<- left_join(TPCData, EnviroData_wide) %>%
 
 head(FullData_left)
 
-FullData_left %>% 
-  summarise_if(is.numeric, mean, na.rm = TRUE)
+summary <- FullData_left %>% 
+  group_by(site.letter) %>% 
+  summarise_if(is.numeric, list(mean=mean, var=var), na.rm = TRUE)
+
+summary
+
+
+### Making a Tibble ###
+
+T1 <- tibble(Site.ID = c("A", "B", "C", "D"), 
+                   Temperature = c(14.1, 16.7, 15.3, 12.8))
+T1
+
+T2 <-tibble(Site.ID = c("A", "B", "D", "E"), 
+            pH = c(7.3, 7.8, 8.1, 7.9))
+T2
+
+#left_join() versus right_join()
+
+left_join(T1, T2)
+
+right_join(T1, T2)
+
+#inner_join() keeps the data that is complete in both data sets.
+
+inner_join(T1, T2)
+
+#full_join() keeps all data from data sets 
+
+full_join(T1, T2)
+
+
+
 
 
 

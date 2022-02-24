@@ -68,6 +68,8 @@ full_join(T1, T2)
 
 
 
+## package of the day 
+install.packages("cowsay")
+library(cowsay)
 
-
-
+say("hello", by = "shark")

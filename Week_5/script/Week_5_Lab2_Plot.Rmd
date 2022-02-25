@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
 library(lubridate)
-
+library(beyonce)
 
 ```
 
@@ -32,136 +32,81 @@ view(depth.data)
 
 conductivity.data <- conductivity.data %>% 
   mutate(datetime=mdy_hms(depth)) %>% #mutate to change a column
-  rename("Date" = datetime) %>% 
+  rename("Date" = datetime) %>% # rename columns
   drop_na() %>%  # drop na's
-  select(Date, TempInSitu, Serial, SalinityInSitu_1pCal)
+  select(Date, TempInSitu, Serial, SalinityInSitu_1pCal) # select columns
 
 
-?rename
+depth.data <- depth.data %>% 
+  mutate(datetime=ymd_hms(date)) %>% #mutate to change a column
+  rename("Date" = date) %>% # rename columns
+  drop_na() %>%  # drop na's
+  select(Date, AbsPressure, Depth) # select columns
 
+head(conductivity.data)
 
-depth.data %>% 
-  mutate(datetime=mdy_hms(date)) %>% #mutate to change a column
-  drop_na () # drop na's
+head(depth.data)
 ```
 
 ```{r Round the Conductivity Data to the Nearest 10 Seconds}
+
+conductivity.data  <- conductivity.data %>% 
+mutate(Date = round_date(Date, "10 seconds")) # round to nearest 10 seconds
+
+head(conductivity.data)
+head(depth.data)
 
 ```
 
 
 ```{r Join the Dataframes Together}
-Join the two dataframes together (in a way where there will be no NAs... i.e. join in a way where only exact matches between the two dataframes are kept)
+
+conductivity.depth<- inner_join(conductivity.data, depth.data) #inner_join() keeps the data that is complete in both data sets.
+
+head(conductivity.depth)
+
+```
+
+```{r Take averages of date, depth, temperature, and salinity by minute}
+
+conductivity.depth <- conductivity.depth %>% 
+  mutate(DateByMin = round_date(Date, "minute")) %>% #round by min
+  group_by(DateByMin) %>% #summarizing data by time 
+  summarise(mean_date = mean(Date, na.rm = TRUE), #mean date
+        mean_depth = mean(Depth, na.rm = TRUE), # mean depth
+        mean_temp = mean(TempInSitu, na.rm = TRUE), # mean temp
+        mean_salinity = mean(SalinityInSitu_1pCal, na.rm = TRUE)) 
+        #mean salinity
+            
+  
+  head(conductivity.depth)
+
+
+```
+
+
+```{r Plot using the averaged data, echo=FALSE}
+
+
+
+
+plot <-conductivity.depth %>% # use conductivity.depth data
+  ggplot(aes(x = mean_date, y = mean_temp)) + # date by mean temp
+  geom_line()+ # draw line
+  labs(title = "Mean Sea Surface Temperature Per Minute", #creating labels
+       x = "Time", y = "Mean Temperature (°C)", caption = "Silbiger Unpublished")+
+     scale_fill_manual(values= beyonce_palette(18))+
+  theme_linedraw()+ 
+  theme(title = element_text(size = 10), axis.title = element_text(size = 10), #text sizes
+        panel.background = element_rect(fill = "lightcyan1")) 
+        # color background
+  
+plot 
+
+ggsave(here('Week_5/output', "Time_Series_Figure.png"), plot) #save plot to an output folder
+  
 
 ```
 
 
 
-take averages of date, depth, temperature, and salinity by minute (hint: easiest way to do this is to make a new column where the hours and minutes are extracted)
-Make any plot using the averaged data
-Do the entire thing using mostly pipes (i.e. you should not have a bunch of different dataframes). Keep it clean.
-Don't forget to comment!
-Save the output, data, and scripts appropriately
-
-
-today() #the current date
-
-today(tzone = "GMT") #date by time zone
-
-am(now()) # is it morning?
-
-leap_year(now()) # is it a leap year?
-
-#Dates must be a character (y = year, m = month, d = day)
-
-today() #the current date
-
-today(tzone = "GMT") #date by time zone
-
-am(now()) # is it morning?
-
-leap_year(now()) # is it a leap year?
-
-#Examples of the same date in different formats
-
-ymd("2021-02-24")
-mdy("02/24/2021")
-mdy("February 24 2021")
-dmy("24/02/2021")
-
-```
-
-
-```{r Date & Time Specifications w/ Lubridate}
-
-ymd_hms("2021-02-24 10:22:20 PM")
-
-mdy_hms("02/24/2021 22:22:20")
-
-mdy_hm("February 24 2021 10:22 PM")
-
-# make a character string
-datetimes<-c("02/24/2021 22:22:20",
-             "02/25/2021 11:21:10",
-             "02/26/2021 8:01:52")
-
-# convert to date
-datetimes <- mdy_hms(datetimes)
-
-month(datetimes)
-
-month(datetimes, label = TRUE)
-
-month(datetimes, label = TRUE, abbr = FALSE) #Spell it out
-
-day(datetimes) # extract day
-
-wday(datetimes, label = TRUE) # extract day of week
-
-#convert to time
-
-hour(datetimes)
-minute(datetimes)
-second(datetimes)
-
-#adding time and days
-datetimes + hours(4) # this adds 4 hours
-
-datetimes + days(2) # this adds 2 days
-
-#Rounding dates and time
-round_date(datetimes, "minute") # round to nearest minute
-
-round_date(datetimes, "5 mins") # round to nearest 5 minute
-
-
-```
-
-```{r Think Pair Share}
-
-conductivity.data <- read_csv(here("Week_5","data", "CondData.csv"))%>% 
-mutate(datetime=mdy_hms(depth)) %>% #use mutate to change a column
-  drop_na () # drop na's
-
-view(conductivity.data) 
-
-```
-
-```{r R package: Catter Plots}
-
-library(devtools)
-install_github("Gibbsdavidl/CatterPlots") # install the data
-
-library(CatterPlots)
-x <-c(1:10)# make up some data
-y<-c(1:10)
-catplot(xs=x, ys=y, cat=3, catcolor='blue')
-
-```
-
-
-```{r pressure, echo=FALSE}
-
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

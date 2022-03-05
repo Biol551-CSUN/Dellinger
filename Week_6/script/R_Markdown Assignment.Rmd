@@ -1,0 +1,124 @@
+---
+title: "Visualizing Open-Source Ocean Data"
+author: "Robert Dellinger"
+date: "3/1/2022"
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+      theme: cerulean
+---
+
+
+```{r include = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library("marmap")
+library("ggplot2")
+library("mapproj")
+library("tidyverse")
+library("here")
+library("yaml")
+library("raster")
+library("kableExtra")
+```
+
+
+# *Visualizing Ocean Data using an R package*
+This can be done using the [marmap](https://cran.r-project.org/web/packages/marmap/index.html) package, which is one of many R packages that provides open-source data for visualizing physical, chemical and biological characteristics of oceanic processes.
+
+```{r, warning=FALSE}
+
+# Loads bathymetry data
+data(hawaii)
+
+# Creates a raster object
+raster <- marmap::as.raster(hawaii)
+
+# Defines the target projection (latitudes and longitudes)
+projection <- "+proj=lcc +lat_1=48 +lat_2=33 +lon_0=-100
++ellps=WGS84"
+
+# Creates a new projected raster object
+projected.raster <- projectRaster(raster, crs = projection)
+
+# Switches back to a bathy object
+hawaii.projected <- as.bathy(projected.raster)
+
+# Plots both the original and projected bathymetry objects
+plot(hawaii, image = TRUE, lwd = 0.3)
+
+```
+
+# *Visualizing Ocean Data from GitHub*
+In this section we use data from [Silbiger et al. 2020](https://royalsocietypublishing.org/doi/full/10.1098/rspb.2020.2743) found on [GitHub] (https://github.com/njsilbiger/MaunaluaSEM) to make a table and a plot. 
+
+
+
+```{r, warnings = FALSE}
+
+## Data Wrangling
+
+ChemData<-read_csv(here("Week_4","data", "chemicaldata_maunalua.csv"))
+
+ChemData_clean<-ChemData %>%
+  filter(complete.cases(.)) %>% #filters out everything that is not a complete row
+  separate(col = Tide_time, # choose the tide time column and separate into two columns Tide and Time (in order)
+           into = c("Tide","Time"), 
+           sep = "_", 
+           remove= TRUE) # separate by _ and remove the column
+
+ChemData_long <-ChemData_clean %>%
+  pivot_longer(cols = Temp_in:percent_sgd, # the cols you want to pivot. 
+               names_to = "Variables", # the names of the new cols with all the column names
+               values_to = "Values") # names of the new column with all the values
+            
+
+ChemData_long <- ChemData_long %>% 
+  distinct(Variables) %>% 
+  mutate(Descriptor = c("Temperature in situ (°C)", "Salinity", "Phosphate (umol/L)", "Silicate (umol/L)", "Nitrate & Nitrite (umol/L)", "pH", "Total alkalinity (umol/Kg)", "Submarine groundwater \n discharge (%)")) %>% 
+  right_join(ChemData_long) #adding in descriptor 
+
+
+ChemData_long_mean <- ChemData_long %>%
+  group_by(Variables, Descriptor, Time, Tide) %>% # group by everything we want
+  summarise(Mean = mean(Values, na.rm = TRUE))
+
+```
+
+
+```{r, fig.cap="Table of Mean Biogeochemcial Values by Tide"}
+
+# Summary Statistics Table
+
+ChemData_table <- ChemData_long_mean [,2:5] %>% 
+ kable(format = "html", caption = "Biogeochemical Parameters for High and Low Tide in Hawaii") %>% #make it a kable table
+  kable_minimal() 
+  
+ChemData_table 
+
+```
+
+    
+```{r, fig.cap="Plots of Mean Biogeochemcial Values by Tide"}
+
+# Figure Preparation
+
+biogeochemicalfigure <- ChemData_long %>%
+  ggplot(aes(x = Tide, y = Values))+
+  geom_violin(draw_quantiles = TRUE, show.legend= TRUE, trim= TRUE)+
+  geom_point(data=ChemData_long_mean, aes(x=Tide, y=Mean, shape=Time, color=Time), size=3)+
+  scale_color_manual(values = c("gold", "midnightblue"))+
+  scale_shape_manual(values = c(16, 8))+
+  facet_wrap(~Descriptor, scales = "free")+
+  labs(title = "Biogeochemical Parameters for High and Low Tide in Hawaii", #creating labels
+     subtitle = "Differences between Day and Night", x = "Tide Level", y = "Values", caption = "Source: Silbiger et al. 2020") + 
+  theme_minimal()
+
+biogeochemicalfigure
+
+```
+

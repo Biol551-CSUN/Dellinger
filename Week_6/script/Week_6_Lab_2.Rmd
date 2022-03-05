@@ -1,0 +1,88 @@
+---
+title: "Week 6: R Markdown 2"
+author: "Robert Dellinger"
+date: "3/1/2022"
+output:
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    theme: cerulean
+---
+
+## Load Library
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.path = '../output/')
+
+library("tidyverse")
+library("here")
+library("palmerpenguins")
+library("yaml")
+
+```
+
+
+## Guides and Links 
+
+
+```{r}
+
+## [Download this cheatsheet on RMarkdown](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
+
+## [The RMarkdown Definitive Guide](https://bookdown.org/yihui/rmarkdown/)
+
+## [RMarkdown RStudio Guide](https://rmarkdown.rstudio.com/)
+
+### [Markdown themes] (https://www.datadreaming.org/post/r-markdown-theme-gallery/)
+```
+
+## Saving Plots using Rmarkdown 
+
+
+```{r, fig.width=3, fig.height=4, asp=1.2, fig.align=center, fig.cap=Bill Length of Penguin Species"}
+
+"{r, out.width=50%} reduces width of plot" 
+"{r, fig.width=3, fig.height=4, asp=1.2, fig.align='center'} align center" 
+"{r, penguin 1, fig.width=3, fig.height=4, asp=1.2, fig.align='center'} align center" 
+
+
+penguins %>% #using penguin data set
+  ggplot(mapping = aes(x=bill_length_mm, # bill length
+             color=species,
+             fill=species))+ #color using species name 
+  geom_bar()+
+  labs(title = "Bill Length of Penguin Species",
+       subtitle = "Differences Between Adelie, Chinstrap, and Gentoo Species",
+       x= "Bill Length (mm)")
+
+```
+## Tables with Kable
+
+```{r pressure}
+
+library(kableExtra)
+
+
+penguins %>% 
+  group_by(species) %>% 
+  summarize(billmean = mean(bill_length_mm, na.rm = TRUE)) %>% 
+  kable () %>% #make it a kable table
+  kable_classic() %>% 
+  row_spec(2, bold = T, color = "white", background = "red") # highlight and table color
+
+```
+
+## R package of the day
+
+```{r pressure}
+
+devtools::install_github("sctyner/memer")
+
+library(memer)
+meme_get("DistractedBf") %>% 
+  meme_text_distbf("Silly R package", "BIOL 551 students", "actual coding")
+
+
+```
+
+

@@ -1,0 +1,59 @@
+---
+title: "Week 6: R Markdown"
+author: "Robert Dellinger"
+date: "3/1/2022"
+output:
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    theme: cerulean
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+# Introduction
+
+Using penguin data to learn *Rmarkdown*
+
+# Library 
+```{r, message=FALSE, warning=FALSE}
+library("tidyverse")
+library("here")
+library("palmerpenguins")
+```
+
+# Inspect the Data
+
+```{r}
+glimpse(penguins)
+```
+
+#Make a Plot 
+```{r}
+penguins %>% #using penguin data set
+  ggplot(mapping = aes(x=bill_length_mm, # bill length
+             y=bill_depth_mm, #bill depth
+             color=species))+ #color using species name 
+  geom_point()+
+  geom_smooth(method=lm)+ #linear regression 
+  labs(title = "Bill Length Versus Depth",
+       subtitle = "Differences Between Adelie, Chinstrap, and Gentoo Species",
+       x= "Bill Length (mm)",
+       y= "Bill Depth (mm)")
+```
+
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```

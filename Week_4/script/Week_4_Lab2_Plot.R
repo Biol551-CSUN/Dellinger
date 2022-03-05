@@ -10,7 +10,6 @@ library(beyonce)
 
 ## Load Data ####################
 ChemData<-read_csv(here("Week_4","data", "chemicaldata_maunalua.csv"))
-View(ChemData)
 glimpse(ChemData)
 
 ## Clean Data #################### 
@@ -42,19 +41,11 @@ ChemData_long <- ChemData_long %>%
   mutate(Descriptor = c("Temperature in situ (°C)", "Salinity", "Phosphate (umol/L)", "Silicate (umol/L)", "Nitrate & Nitrite (umol/L)", "pH", "Total alkalinity (umol/Kg)",  "Submarine groundwater \n discharge (%)")) %>% 
   right_join(ChemData_long) #adding in descriptor 
 
-##  Summary Statistics (Mean)  #################### 
 
-ChemData_long_mean <- ChemData_long %>%
-  group_by(Variables, Descriptor, Time, Tide) %>% # group by everything we want
-  summarise(Param_means = mean(Values, na.rm = TRUE))
 
-view(ChemData_long)
 
-<<<<<<< HEAD
-figure <- ChemData_long %>%
-=======
+Biochemicalplot <- ChemData_long %>%
 ChemData_long %>%
->>>>>>> 38c256b3072a4311b0d9910e521b0e77eb1d69fd
   ggplot(aes(x = Tide, y = Values))+
   geom_violin(draw_quantiles = TRUE, show.legend= TRUE, trim= TRUE)+
   geom_point(data=ChemData_long_mean, aes(x=Tide, y=Param_means, shape=Time, color=Time), size=3)+
@@ -62,21 +53,20 @@ ChemData_long %>%
   scale_shape_manual(values = c(16, 8))+
   facet_wrap(~Descriptor, scales = "free")+
   labs(title = "Biogeochemical Parameters for High and Low Tide in Hawaii", #creating labels
-     subtitle = "Differences between Day and Night",
-<<<<<<< HEAD
-     x = "Tide Level", y = "Values", caption = "Source: Silbiger et al. 2020") + 
+     subtitle = "Differences between Day and Night", x = "Tide Level", y = "Values", caption = "Source: Silbiger et al. 2020") + 
   theme_bw()
   
-ggsave(here('Week_4/Output', "Biogeochemical_Parameters_Figure.png"), figure) #save plot to an output folder
 
-##  Summary Statistics  #################### 
+Biochemicalplot
+
+
+ggsave(here('Week_4/Output', "Biogeochemical_Parameters_Figure.png"), boicv) #save plot to an output folder
+
+
   
-ChemData_long %>%
-    group_by(Descriptor, Time, Tide) %>% # group by everything we want
-    summarise(Param_means = mean(Values, na.rm = TRUE), # get mean
-              Param_vars = var(Values, na.rm = TRUE),# get variance
-              Param_sd = sd(Values, na.rm = TRUE)) %>%  # get sd
-  write_csv(here("Week_4","output","Biogeochemical_summary.csv")) 
+
+
+
 =======
      x = "Tide Level", y = "Values", caption = "Source: Silbiger et al. 2020")
   

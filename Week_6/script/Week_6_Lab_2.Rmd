@@ -39,7 +39,7 @@ library("yaml")
 ## Saving Plots using Rmarkdown 
 
 
-```{r, fig.width=3, fig.height=4, asp=1.2, fig.align=center, fig.cap=Bill Length of Penguin Species"}
+```{r, fig.width=3, fig.height=4, asp=1.2, fig.align=center, fig.cap="Bill Length of Penguin Species"}
 
 "{r, out.width=50%} reduces width of plot" 
 "{r, fig.width=3, fig.height=4, asp=1.2, fig.align='center'} align center" 
@@ -61,6 +61,7 @@ penguins %>% #using penguin data set
 ```{r pressure}
 
 library(kableExtra)
+
 
 
 penguins %>% 

@@ -4,12 +4,12 @@ author: "Robert Dellinger"
 date: "3/1/2022"
 output:
   html_document:
-    df_print: paged
+    theme: yeti
+    highlight: monochrome
     toc: true
     toc_float:
       collapsed: false
       smooth_scroll: false
-      theme: cerulean
 ---
 
 
@@ -30,7 +30,7 @@ library("kableExtra")
 # *Visualizing Ocean Data using an R package*
 This can be done using the [marmap](https://cran.r-project.org/web/packages/marmap/index.html) package, which is one of many R packages that provides open-source data for visualizing physical, chemical and biological characteristics of oceanic processes.
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, message =FALSE}
 
 # Loads bathymetry data
 data(hawaii)
@@ -58,7 +58,7 @@ In this section we use data from [Silbiger et al. 2020](https://royalsocietypubl
 
 
 
-```{r, warnings = FALSE}
+```{r, warnings = FALSE, message =FALSE}
 
 ## Data Wrangling
 
@@ -76,7 +76,6 @@ ChemData_long <-ChemData_clean %>%
                names_to = "Variables", # the names of the new cols with all the column names
                values_to = "Values") # names of the new column with all the values
             
-
 ChemData_long <- ChemData_long %>% 
   distinct(Variables) %>% 
   mutate(Descriptor = c("Temperature in situ (°C)", "Salinity", "Phosphate (umol/L)", "Silicate (umol/L)", "Nitrate & Nitrite (umol/L)", "pH", "Total alkalinity (umol/Kg)", "Submarine groundwater \n discharge (%)")) %>% 
@@ -103,7 +102,7 @@ ChemData_table
 ```
 
     
-```{r, fig.cap="Plots of Mean Biogeochemcial Values by Tide"}
+```{r, fig.cap="Plots of Mean Biogeochemcial Values by Tide", warning = FALSE}
 
 # Figure Preparation
 

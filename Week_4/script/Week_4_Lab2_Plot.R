@@ -20,7 +20,7 @@ ChemData_clean<-ChemData %>%
            sep = "_", 
            remove= TRUE) # separate by _ and remove the column
 
-head(ChemData_clean) # * come clean by Hilary Duff plays in the background *
+head(ChemData_clean) # 
 
 ##  Pivot Data using pivot_longer()  #################### 
 
@@ -31,9 +31,10 @@ ChemData_long <-ChemData_clean %>%
 
 View(ChemData_long)
 
+ChemData_mean <- ChemData_long %>% 
+summarise(mean_values = mean(Values, na.rm = TRUE)) 
 
-
-            
+View
 ## Plot long data using Pivot ###########################
 
 ChemData_long <- ChemData_long %>% 
@@ -89,14 +90,10 @@ ChemData_long %>%
             Param_sd = sd(Values, na.rm = TRUE)) # get sd
 
 
-  pivot_longer(cols = Temp_in:percent_sgd, 
-               names_to = "Variables", # the names of the new cols with all the column names
-               values_to = "Values") %>%  # names of the new column with all the values
-  group_by(Variables, Tide, Time) %>%
-  summarise(mean_vals = mean(Values, na.rm = TRUE)) 
+
 View(ChemData_clean) %>% 
   pivot_wider(names_from = Variables, 
-              values_from = mean_vals) %>% # notice it is now mean_vals as the col name
+              values_from = mean_values) %>% # notice it is now mean_vals as the col name
   write_csv(here("Week_4","output","summary.csv"))  # export as a csv to the right folder
 
 ChemData_long %>%

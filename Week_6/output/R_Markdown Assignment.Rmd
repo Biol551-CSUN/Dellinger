@@ -1,20 +1,15 @@
 ---
-title: "Habits"
+title: "Visualizing Open-Source Ocean Data"
+author: "Robert Dellinger"
+date: "3/1/2022"
 output:
   html_document:
-    df_print: paged
+    theme: yeti
+    highlight: monochrome
     toc: true
     toc_float:
       collapsed: false
       smooth_scroll: false
----
-
-title: "Visualizing Open-Source Ocean Plots Using Markdown"
-author: "Robert Dellinger"
-date: "3/1/2022"
-output:
-  html_document: yes
-    toc: yes
 ---
 
 
@@ -32,11 +27,10 @@ library("kableExtra")
 ```
 
 
-## *VISUALIZING OPEN SOURCE OCEAN DATA*
-This can be done using the [marmap](https://cran.r-project.org/web/packages/marmap/index.html) package, which is one of many R packages that provides open-source data for visualizing physical, chemical and biological characteristics of oceanic processes. (bathymetry).
+# *Visualizing Ocean Data using an R package*
+This can be done using the [marmap](https://cran.r-project.org/web/packages/marmap/index.html) package, which is one of many R packages that provides open-source data for visualizing physical, chemical and biological characteristics of oceanic processes.
 
-
-```{r, warning=FALSE}
+```{r, warning=FALSE, message =FALSE}
 
 # Loads bathymetry data
 data(hawaii)
@@ -44,7 +38,7 @@ data(hawaii)
 # Creates a raster object
 raster <- marmap::as.raster(hawaii)
 
-# Defines the target projection
+# Defines the target projection (latitudes and longitudes)
 projection <- "+proj=lcc +lat_1=48 +lat_2=33 +lon_0=-100
 +ellps=WGS84"
 
@@ -54,22 +48,21 @@ projected.raster <- projectRaster(raster, crs = projection)
 # Switches back to a bathy object
 hawaii.projected <- as.bathy(projected.raster)
 
-# Plots both the original and projected bathy objects
+# Plots both the original and projected bathymetry objects
 plot(hawaii, image = TRUE, lwd = 0.3)
-
 
 ```
 
-## *VISUALIZING MARINE BIOLOGY GIT HUB DATA*
+# *Visualizing Ocean Data from GitHub*
 In this section we use data from [Silbiger et al. 2020](https://royalsocietypublishing.org/doi/full/10.1098/rspb.2020.2743) found on [GitHub] (https://github.com/njsilbiger/MaunaluaSEM) to make a table and a plot. 
 
-# Data Preparation
-```{r, warnings = FALSE}
 
+
+```{r, warnings = FALSE, message =FALSE}
+
+## Data Wrangling
 
 ChemData<-read_csv(here("Week_4","data", "chemicaldata_maunalua.csv"))
-
-glimpse(ChemData)
 
 ChemData_clean<-ChemData %>%
   filter(complete.cases(.)) %>% #filters out everything that is not a complete row
@@ -78,15 +71,11 @@ ChemData_clean<-ChemData %>%
            sep = "_", 
            remove= TRUE) # separate by _ and remove the column
 
-head(ChemData_clean) # 
-
-
 ChemData_long <-ChemData_clean %>%
   pivot_longer(cols = Temp_in:percent_sgd, # the cols you want to pivot. 
                names_to = "Variables", # the names of the new cols with all the column names
                values_to = "Values") # names of the new column with all the values
             
-
 ChemData_long <- ChemData_long %>% 
   distinct(Variables) %>% 
   mutate(Descriptor = c("Temperature in situ (°C)", "Salinity", "Phosphate (umol/L)", "Silicate (umol/L)", "Nitrate & Nitrite (umol/L)", "pH", "Total alkalinity (umol/Kg)", "Submarine groundwater \n discharge (%)")) %>% 
@@ -100,11 +89,9 @@ ChemData_long_mean <- ChemData_long %>%
 ```
 
 
-
-# Summary Statistics Table
-
 ```{r, fig.cap="Table of Mean Biogeochemcial Values by Tide"}
 
+# Summary Statistics Table
 
 ChemData_table <- ChemData_long_mean [,2:5] %>% 
  kable(format = "html", caption = "Biogeochemical Parameters for High and Low Tide in Hawaii") %>% #make it a kable table
@@ -115,10 +102,9 @@ ChemData_table
 ```
 
     
+```{r, fig.cap="Plots of Mean Biogeochemcial Values by Tide", warning = FALSE}
 
 # Figure Preparation
-
-```{r, fig.cap="Plots of Mean Biogeochemcial Values by Tide"}
 
 biogeochemicalfigure <- ChemData_long %>%
   ggplot(aes(x = Tide, y = Values))+

@@ -1,0 +1,103 @@
+---
+title: "Week 7 Lab Figure"
+author: "Robert Dellinger"
+date: "3/8/2022"
+output: html_document
+---
+
+The data this week comes from Break Free from Plastic 
+
+
+```{r Load Library, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(maps)
+library(ggplot2)
+library(janitor)
+library(mapproj)
+library(here)
+library(lubridate)
+
+```
+
+
+```{r Read in Data}
+
+#Read in Plastic Data
+plastics <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-01-26/plastics.csv')
+
+glimpse(plastics)
+
+
+```
+
+
+```{r Merging and Organizing the Data}
+
+plastic_clean <- plastics %>%
+  rename("empty_count" = "empty",
+         "high_density_polyethylene_count" = "hdpe",
+         "low_density_polyethylene_count" = "ldpe",
+         "other_count" = "o",
+         "polyester_plastic_count" = "pet",
+         "polypropylene_count" = "pp",
+         "polystyrene_count" = "ps",
+         "pvc_plastic_count" = "pvc",
+         "total_plastic_count" = "grand_total", 
+         "times_counted" = "num_events") %>% 
+  filter(!country %in% c("EMPTY")) %>% 
+  clean_names() %>% 
+  mutate(country=str_to_title(country)) 
+  
+#Create new dataframe to use for my plot
+plastic_dataframe <- plastic_clean %>% 
+  group_by(country) %>%
+  summarise(total_plastic_count = sum(total_plastic_count)) %>%
+  slice_max(order_by = total_plastic_count, n = 10)
+  
+#Load and Combine World Data
+world<-map_data("world")
+
+world.data<-map_data("world") %>% 
+  rename("country" = "region") %>% 
+  select(c(country, long, lat, group))
+
+view(world)
+
+country.plastic <- inner_join(world.data, plastic_dataframe) %>% 
+  group_by(country)
+
+view(country.plastic)
+
+```
+
+
+```{r Making a World Map}
+
+  
+map <- ggplot() +
+    geom_polygon(data = world, 
+               aes(x = long, 
+                   y = lat, 
+                   group = group)) +
+  geom_polygon(data = country.plastic, 
+               aes(x = long, 
+                   y = lat, 
+                   group = group,
+                   fill = total_plastic_count),
+               color = "black") +
+  coord_map(projection = "mercator", xlim = c(-180,180))+
+  theme_void()+
+  scale_fill_gradient(aesthetics = "fill") +
+  labs(title = "Plastic Pollution Distribution", 
+       subtitle = "Countries with the Largest Total Plastic Counts", 
+       caption = "Data from breakfreefromplastic.org | Viz by Rob Dellinger", 
+       x = "longitude", y = "latitude", fill = "Total Plastic Count")
+  
+  map
+  
+  ggsave(here('Week_7/output', "Pollution.map.png"), plot) #save plot to an output folder
+  
+```
+

@@ -1,0 +1,183 @@
+---
+title: "Week 7 Lab 1"
+author: "Robert Dellinger"
+date: "3/8/2022"
+output: html_document
+---
+
+```{r Load Library, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(maps)
+library(mapdata)
+library(mapproj)
+```
+
+
+```{r Read in Data}
+
+# Read in population data in California by county
+popdata<-read_csv(here("Week_7","data","CAPopdata.csv"))
+
+#read in data on number of seastars at different field sites
+stars<-read_csv(here("Week_7","data","stars.csv"))
+
+```
+
+
+```{r Coding w/ Maps Package}
+
+# get data for the entire world
+world<-map_data("world")
+head(world)
+
+#get data for a country
+usa<-map_data("usa")
+head(usa)
+
+#get data for a state
+state<-map_data("state")
+head(state)
+
+#get data for a county
+counties<-map_data("county")
+head("counties")
+
+```
+
+
+```{r Making a Simple Map}
+
+#making a map
+
+ggplot()+
+  geom_polygon(data = world, 
+               aes(x = long, 
+                   y = lat, 
+                   group = group, 
+                   fill = region),
+               color = "black") +
+  guides(fill = FALSE)
+
+#mercator projection (default projection)
+
+
+ggplot()+
+  geom_polygon(data = world, 
+               aes(x = long, 
+                   y = lat, 
+                   group = group,
+                   fill = region),
+               color = "black")+
+  theme_minimal()+
+  guides(fill = FALSE)+
+  theme(panel.background = element_rect(fill = "lightblue"))+
+  coord_map(projection = "mercator",
+            xlim = c(-180,180))
+
+#sinusoidal projection (circular projection)
+
+ggplot()+
+  geom_polygon(data = world, 
+               aes(x = long,
+                   y = lat,
+                   group = group, 
+                   fill = region),
+               color = "black")+
+  theme_minimal()+
+  guides(fill = FALSE)+
+  theme(panel.background = element_rect(fill = "lightblue"))+
+  coord_map(projection = "sinusoidal",
+            xlim = c(-180,180))
+
+```
+
+```{r Map of California}
+
+# Use the states dataset
+head(state)
+
+california<-state %>%
+  filter(region == "california") #filter out california from region
+
+ggplot()+
+geom_polygon(data = california, 
+             aes(x = long, 
+                 y = lat, 
+                 group = group), 
+             color = "black")+
+  coord_map(projection = "mercator") + #setting a projection
+  theme_minimal() +
+  theme_void() # removes gridline
+
+```
+
+```{r Populations of Counties in California}
+
+# Use the counties dataset
+head(counties)[1:3,]
+
+# Look at the county data
+head(popdata)
+
+CApop_county<-popdata %>%
+  select("subregion" = County, Population)  %>% # selecting both the county and population column 
+  inner_join(counties) %>% #renaming county to subregion to join by the counties data set
+  filter(region == "california") # some counties have same names in other states
+
+head(CApop_county)
+
+
+ggplot()+
+geom_polygon(data = CApop_county, 
+             aes(x = long, 
+                 y = lat, 
+                 group = group,
+                 fill = Population), #using population density as a fill
+             color = "black")+
+  coord_map()+
+  theme_void() +
+  scale_fill_gradient(trans = "log10") #using logartihmic scale to make easier to visualize
+
+
+```
+
+
+```{r Adding a Layer}
+
+head(stars)
+
+ggplot()+
+geom_polygon(data = CApop_county, 
+             aes(x = long, 
+                 y = lat, 
+                 group = group,
+                 fill = Population),  
+             color = "black")+
+  geom_point(data = stars, # add a point at all my sites 
+             aes(x = long, 
+                 y = lat,
+                 size = star_no))+ # size proportional to number of stars
+  coord_map()+
+  theme_void() +
+  scale_fill_gradient(trans = "log10")+
+  labs(size = "# stars/m2") 
+  ggsave(here("Week_7","output","CApop.pdf"))
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r R Package}
+remotes::install_github("R-CoderDotCom/ggdogs@main")
+
+library(ggdogs)
+ggplot(mtcars) +
+  geom_dog(aes(mpg, wt), dog = "pug", size = 5)
+
+
+
+
+```

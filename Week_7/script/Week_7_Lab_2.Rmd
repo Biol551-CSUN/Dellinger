@@ -1,0 +1,92 @@
+---
+title: "Week 7: Maps 2"
+author: "Robert Dellinger"
+date: "3/10/2022"
+output:
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    theme: cerulean
+---
+
+## Load Library
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE, fig.path = '../output/')
+
+install.packages("ggmap") # for ggmaps
+install.packages("ggsn") # to add scale bars and compass arrows
+
+library(ggmap)
+library(tidyverse)
+library(here)
+library(ggsn)
+
+register_google(key = "AIzaSyAurSRI2IrS8qoTYxh5to91hyuml6U_V2I", write = TRUE) ### use your own API
+#IMPORTANT don't put your key to github!! I usually save mine in a text file and import it each time
+# Setting write = TRUE will write the API key to your R environment so that you do not have to re register it each time
+
+
+```
+
+
+## Load in Data
+
+
+```{r}
+
+ChemData<-read_csv(here("Week_7","data","chemicaldata_maunalua.csv"))
+glimpse(ChemData)
+
+```
+
+```{r}
+
+
+Oahu<-get_map("Oahu")
+
+ggmap(Oahu)
+
+#Make a data frame of lon and lat coordinates
+WP<-data.frame(lon = -157.7621, lat = 21.27427) # coordinates for Wailupe
+# Get base layer
+Map1<-get_map(WP)
+# plot it
+ggmap(Map1)
+
+
+Map1<-get_map(WP,zoom = 17) #Map1<-get_map(WP,zoom = 17, maptype = "watercolor")
+ggmap(Map1)
+
+```
+
+## Saving Plots using Rmarkdown 
+
+
+```{r, fig.width=3, fig.height=4, asp=1.2, fig.align=center}
+
+ggmap(Map1)+
+  geom_point(data = ChemData, 
+             aes(x = Long, y = Lat, color = Salinity), 
+             size = 4) + 
+  scale_color_viridis_c()+
+  scalebar( x.min = -157.766, x.max = -157.758,
+           y.min = 21.2715, y.max = 21.2785,
+            dist = 250, dist_unit = "m", model = "WGS84", 
+            transform = TRUE, st.color = "white",
+            box.fill = c("yellow", "white"))
+
+
+```
+## Finding Lat and Longitude 
+
+```{r pressure}
+
+#use geocode()
+
+geocode("the white house")
+
+geocode("California State University, Northridge")
+
+```
+

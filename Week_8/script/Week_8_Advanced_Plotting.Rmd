@@ -1,0 +1,79 @@
+---
+title: "Week 8: AdvancedPlotting"
+author: "Robert Dellinger"
+date: "3/15/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load Library
+
+```{r cars}
+library(tidyverse)
+library(here)
+library(patchwork)
+library(ggrepel)
+library(gganimate)
+library(magick)
+library(palmerpenguins)
+```
+
+## Patchwork and Interweaving Plots Together 
+
+```{r, warning=FALSE}
+
+#this section generates two plots that are separate
+
+# plot 1
+
+p1<-penguins%>% 
+  ggplot(aes(x = body_mass_g, 
+             y = bill_length_mm, 
+             color = species))+
+  geom_point()
+p1
+
+
+# plot 2
+p2<-penguins %>%
+  ggplot(aes(x = sex, 
+             y = body_mass_g, 
+             color = species))+
+  geom_jitter(width = 0.2)
+p2
+
+
+#combining plots 
+cp <- p1+p2 +
+  plot_layout(guides="collect")+ # merges the legends together (if they are the same)
+  plot_annotation(tag_levels="A")
+  
+ cp 
+ 
+cp2 <- p1/p2 + #this is a different orientation style (places on top of eachother ather then side by side)
+  plot_layout(guides="collect")+ # merges the legends together (if they are the same)
+  plot_annotation(tag_levels="A")
+  
+cp2
+  
+#Ccan change the themes for all graphs here if they are together (may be helpful for formatting all graphs similarly)
+
+```
+## ggrepel
+
+```{r}
+
+View(mtcars)
+
+
+ggplot(mtcars, aes(x = wt, 
+                   y = mpg, 
+                   label = rownames(mtcars))) +
+  geom_text() + # creates a text label
+  geom_point(color = 'red')
+
+```
+

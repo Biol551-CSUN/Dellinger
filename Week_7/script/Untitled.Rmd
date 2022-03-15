@@ -1,0 +1,161 @@
+---
+title: "Good & Bad Figure Assignment"
+author: "Robert Dellinger"
+date: "3/13/2022"
+output: html_document
+---
+
+#Load Library
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+require(ncdump)
+require(akima)
+require(ncdf4)
+require(dplyr)
+require(rerddap)
+require(sf)
+require(tidyverse)
+require(lubridate)
+require(oce)
+require(ocedata)
+require(RColorBrewer)
+require(wior)
+require(rgeos)
+require(ggsn)
+require(ggplot2)
+require(ggrepel)
+require(ggmap)
+require(marmap)
+require("devtools")
+```
+
+
+```{r setup, include=FALSE}
+#Load Data
+data("coastlineWorld")
+data("coastlineWorldMedium")
+data("coastlineWorldFine")
+
+```
+
+
+#Good Plot
+```{r}
+par(mar=c(2, 2, 1, 1))
+lonlim = c(-125,-110)
+latlim = c(32,40)
+
+mpbad <- function() {
+mapPlot(coastlineWorld, 
+        projection="+proj=mill",
+        col="purple", 
+        longitudelim=lonlim, 
+        latitudelim=latlim,
+        lonlabels=TRUE,
+        latlabels=TRUE,
+        grid = c(.25, .25),
+        geographical=2)
+}
+mpbad()
+
+bathy <- function() {
+b <- as.topo(getNOAA.bathy(-180, 0, 30, 50, keep=TRUE))
+mp()
+mapImage(b, col=oceColorsGebco, breaks=seq(-4000, 0, 500))
+mapImage(b, col=oceColorsGebco, breaks=seq(-4000, 0, 500), filledContour = TRUE)
+mapPolygon(coastlineWorldFine, col="purple")
+}
+bathy()
+
+## create points name with their respective locations
+  
+stations1 <- data.frame(name = c("BML", "HMS", "MSB", "CDMSP", "LCSB","SC"), lat = c(38.33, 36.62, 34.36, 33.59, 34.06, 33.55), lon = c(-123.05, -121.90, -119.44, -117.87, -118.93, -117.80))
+
+## define the margin of the plot
+par(mar=c(2, 2, 3, 3))
+
+## make a base and bathymetry
+bathy()
+
+mapGrid(.1,.1)
+
+## ## overlay the point layer
+mapPoints(longitude = stations1$lon,
+          latitude = stations1$lat, 
+          pch = 20, 
+          cex = 5.00)
+
+## add station name on the map
+mapText(longitude = stations1$lon+2,
+        latitude = stations1$lat+2,
+        labels = stations1$name, font=5)
+
+```
+
+#Good Plot
+```{r}
+par(mar=c(2, 2, 1, 1))
+lonlim = c(-125,-110)
+latlim = c(32,40)
+
+mp <- function() {
+mapPlot(coastlineWorldFine, 
+        projection="+proj=mill",
+        col="darkolivegreen3", 
+        longitudelim=lonlim, 
+        latitudelim=latlim,
+        lonlabels=TRUE,
+        latlabels=TRUE,
+        grid = c(1, 1),
+        geographical=4)
+}
+mp()
+
+bathy <- function() {
+b <- as.topo(getNOAA.bathy(-180, 0, 30, 50, keep=TRUE))
+mp()
+mapImage(b, col=oceColorsGebco, breaks=seq(-4000, 0, 500))
+mapImage(b, col=oceColorsGebco, breaks=seq(-4000, 0, 500), filledContour = TRUE)
+mapPolygon(coastlineWorldFine, col="darkolivegreen3")
+}
+bathy()
+
+## create points name with their respective locations
+  
+stations1 <- data.frame(name = c("BML", "HMS", "MSB", "CDMSP"), lat = c(38.33, 36.62, 34.36, 33.59), lon = c(-123.05, -121.90, -119.44, -117.87))
+
+stations2 <- data.frame(name = c("LCSB","SC"), lat = c(34.06, 33.55), lon = c(-118.93, -117.80))
+
+## define the margin of the plot
+par(mar=c(2, 2, 1, 1))
+
+## make a base and bathymetry
+bathy()
+
+mapGrid(1,1)
+
+## ## overlay the point layer
+mapPoints(longitude = stations1$lon,
+          latitude = stations1$lat, 
+          pch = 20, 
+          cex = 1.00)
+
+mapPoints(longitude = stations2$lon,
+          latitude = stations2$lat, 
+          pch = 20, 
+          cex = 1.00)
+
+## add station name on the map
+mapText(longitude = stations1$lon+0.65,
+        latitude = stations1$lat+0.5,
+        labels = stations1$name, font=2)
+
+mapText(longitude = stations2$lon-0.30,
+        latitude = stations2$lat-0.45,
+        labels = stations2$name, font=2)
+
+```
+
+
+

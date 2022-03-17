@@ -8,7 +8,7 @@ output: html_document
 The data this week comes from Break Free from Plastic 
 
 
-```{r Load Library, include=FALSE}
+```{r, Load Library, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
@@ -22,7 +22,7 @@ library(lubridate)
 ```
 
 
-```{r Read in Data}
+```{r, Read in Data}
 
 #Read in Plastic Data
 plastics <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-01-26/plastics.csv')
@@ -33,7 +33,7 @@ glimpse(plastics)
 ```
 
 
-```{r Merging and Organizing the Data}
+```{r, Merging and Organizing the Data}
 
 plastic_clean <- plastics %>%
   rename("empty_count" = "empty",
@@ -73,9 +73,8 @@ view(country.plastic)
 ```
 
 
-```{r Making a World Map}
+```{r, Making a World Map}
 
-  
 map <- ggplot() +
     geom_polygon(data = world, 
                aes(x = long, 
@@ -97,7 +96,7 @@ map <- ggplot() +
   
   map
   
-  ggsave(here('Week_7/output', "Pollution.map.png"), plot) #save plot to an output folder
+ggsave(here('Week_7/output', "Pollution.map.png"), map) #save plot to an output folder
   
 ```
 

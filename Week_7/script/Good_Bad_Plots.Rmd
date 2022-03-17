@@ -7,7 +7,7 @@ output: html_document
 
 #Load Library
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
 
 require(ncdump)
 require(akima)
@@ -31,9 +31,9 @@ require("devtools")
 ```
 
 
-```{r setup, include=FALSE}
+```{r data, include=FALSE}
 #Load Data
-data("coastlineWorld")
+data("coastlineWorld") # loading in coastline shapes
 data("coastlineWorldMedium")
 data("coastlineWorldFine")
 
@@ -41,31 +41,40 @@ data("coastlineWorldFine")
 
 
 #Bad Plot
-```{r}
-par(mar=c(2, 2, 1, 1))
-lonlim = c(-125,-110)
+
+```{r Setting Up the Bad Plot, warning=FALSE}
+
+par(mar=c(2, 2, 1, 1)) #setting margins
+lonlim = c(-125,-110) #setting lat and long lim
 latlim = c(32,40)
 
 mpbad <- function() {
 mapPlot(coastlineWorld, 
-        projection="+proj=stere",
+        projection="+proj=stere",#setting projection
         col="purple", 
         longitudelim=lonlim, 
-        latitudelim=latlim,
+        latitudelim=latlim, 
         lonlabels=TRUE,
         latlabels=TRUE,
-        grid = c(.25, .25),
+        grid = c(.25, .25), # grid size
         geographical=2)
+  
 }
-mpbad()
 
-bathy <- function() {
+bathy <- function() {  #coordinates for bathymetry and setting function 
 b <- as.topo(getNOAA.bathy(-180, 0, 30, 50, keep=TRUE))
-mpbad()
-mapImage(b, col=oceColorsViridis, breaks=seq(-4000, 0, 100))
-mapImage(b, col=oceColorsViridis, breaks=seq(-4000, 0, 100), filledContour = TRUE)
+mpbad() 
+mapImage(b, col=oceColorsViridis, breaks=seq(-4000, 0, 100)) #depth levels 
+mapImage(b, col=oceColorsViridis, breaks=seq(-4000, 0, 100), filledContour = TRUE) #color contour
 mapPolygon(coastlineWorldFine, col="purple")
 }
+
+```
+
+
+```{r, warning=FALSE}
+
+mpbad()
 bathy()
 
 ## create points name with their respective locations
@@ -94,31 +103,37 @@ mapText(longitude = stations1$lon+2,
 ```
 
 #Good Plot
-```{r}
+```{r, Setting Up the Good Plot, warning=FALSE}
+
 par(mar=c(2, 2, 1, 1))
 lonlim = c(-125,-110)
 latlim = c(32,40)
 
 mp <- function() {
-mapPlot(coastlineWorldFine, 
-        projection="+proj=mill",
+mapPlot(coastlineWorldFine,  #finescale data
+        projection="+proj=mill", # projection type
         col="darkolivegreen3", 
         longitudelim=lonlim, 
-        latitudelim=latlim,
+        latitudelim=latlim, 
         lonlabels=TRUE,
         latlabels=TRUE,
-        grid = c(1, 1),
+        grid = c(1, 1), # gridsize
         geographical=4)
 }
-mp()
 
 bathy <- function() {
-b <- as.topo(getNOAA.bathy(-180, 0, 30, 50, keep=TRUE))
+b <- as.topo(getNOAA.bathy(-180, 0, 30, 50, keep=TRUE)) #coords for bathy
 mp()
 mapImage(b, col=oceColorsGebco, breaks=seq(-4000, 0, 500))
-mapImage(b, col=oceColorsGebco, breaks=seq(-4000, 0, 500), filledContour = TRUE)
-mapPolygon(coastlineWorldFine, col="darkolivegreen3")
+mapImage(b, col=oceColorsGebco, breaks=seq(-4000, 0, 500), filledContour = TRUE) #oce gradient and filled contour for bathymetry 
+mapPolygon(coastlineWorldFine, col="darkolivegreen3") #green topography
 }
+```
+
+
+```{r, warning=FALSE}
+
+mp()
 bathy()
 
 ## create points name with their respective locations
@@ -147,7 +162,7 @@ mapPoints(longitude = stations2$lon,
           cex = 1.00)
 
 ## add station name on the map
-mapText(longitude = stations1$lon+0.65,
+mapText(longitude = stations1$lon+0.65, 
         latitude = stations1$lat+0.5,
         labels = stations1$name, font=2)
 

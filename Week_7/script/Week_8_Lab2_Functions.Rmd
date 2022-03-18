@@ -1,0 +1,102 @@
+---
+title: "Week 8: Functions"
+author: "Robert Dellinger"
+date: "3/8/2022"
+output: html_document
+---
+
+
+
+```{r, Load Library, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(palmerpenguins)
+library(PNWColors)
+
+```
+
+
+```{r, Function 1}
+
+
+g_to_kg <- function(body_mass_g) { 
+  body_mass_kg <- (body_mass_g) *  0.001 #conversion favtor for g to kg
+  return(body_mass_kg)
+}
+
+g_to_kg(100)
+
+
+
+```
+
+
+```{r,Think, Pair, Share}
+
+c_to_k <- function(temp_qC){
+temp_K <- (temp_C +273.15)
+return(temp_K)
+}
+
+c_to_k(0)
+
+
+```
+
+```{r, Making Plots into a Function, warning=FALSE, message=FALSE}
+
+myplot<-function(data, x, y){ 
+pal<-pnw_palette("Lake",3, type = "discrete") # my color palette 
+ggplot(data, aes(x = {{x}}, y = {{y}} , color = island))+
+  geom_point()+
+  geom_smooth(method = "lm")+ # add a linear model
+  scale_color_manual("Island", values=pal)+   # use pretty colors and change the legend title
+  theme_bw()
+}
+
+#layering the plot
+myplot(x = body_mass_g, 
+       y = flipper_length_mm)+
+  labs(x = "Body mass (g)",
+       y = "Flipper length (mm)")
+
+
+```
+
+```{r, Simple If/Else Functions}
+
+a <- 4
+b <- 5
+
+if (a > b) { # my question
+  f <- 20 # if it is true give me answer 1
+    } else { # else give me answer 2
+  f <- 10
+}
+
+```
+
+```{r, If/Else Function}
+
+myplot<-function(data = penguins, x, y, lines=TRUE ){ # add new argument for lines
+pal<-pnw_palette("Lake",3, type = "discrete") # my color palette 
+if(lines==TRUE){
+ggplot(data, aes(x = {{x}}, y = {{y}} , color = island))+
+  geom_point()+
+  geom_smooth(method = "lm")+ # add a linear model
+  scale_color_manual("Island", values=pal)+   # use pretty colors and change the legend title
+  theme_bw()
+}
+else{
+ggplot(data, aes(x = {{x}}, y = {{y}} , color = island))+
+  geom_point()+
+  scale_color_manual("Island", values=pal)+   # use pretty colors and change the legend title
+  theme_bw()
+}
+} 
+
+
+mplot
+```
+

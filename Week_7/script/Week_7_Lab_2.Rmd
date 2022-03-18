@@ -14,18 +14,10 @@ output:
 ```{r}
 knitr::opts_chunk$set(echo = TRUE, fig.path = '../output/')
 
-install.packages("ggmap") # for ggmaps
-install.packages("ggsn") # to add scale bars and compass arrows
-
 library(ggmap)
 library(tidyverse)
 library(here)
 library(ggsn)
-
-register_google(key = "AIzaSyAurSRI2IrS8qoTYxh5to91hyuml6U_V2I", write = TRUE) ### use your own API
-#IMPORTANT don't put your key to github!! I usually save mine in a text file and import it each time
-# Setting write = TRUE will write the API key to your R environment so that you do not have to re register it each time
-
 
 ```
 
@@ -63,7 +55,7 @@ ggmap(Map1)
 ## Saving Plots using Rmarkdown 
 
 
-```{r, fig.width=3, fig.height=4, asp=1.2, fig.align=center}
+```{r, fig.width=3, fig.height=4, asp=1.2, fig.align="center"}
 
 ggmap(Map1)+
   geom_point(data = ChemData, 

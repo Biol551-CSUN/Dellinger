@@ -1,5 +1,5 @@
 ---
-title: "Week 8: AdvancedPlotting"
+title: "Week 8: Advanced Plotting"
 author: "Robert Dellinger"
 date: "3/15/2022"
 output: html_document

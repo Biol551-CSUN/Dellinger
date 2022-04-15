@@ -42,6 +42,9 @@ data("coastlineWorldFine")
 
 #Bad Plot
 
+The bad plot has no labels for the axis and the axis has numbers overlapping one another. This plot also is distorted and the grid lines are messed up showing a projection that is inaccurate. The points on the map are far too large and the writing is eligible. Further, the color scheme for the map does not accurately depict the color used for ocean bathymetry. 
+
+
 ```{r Setting Up the Bad Plot, warning=FALSE}
 
 par(mar=c(2, 2, 1, 1)) #setting margins
@@ -103,6 +106,10 @@ mapText(longitude = stations1$lon+2,
 ```
 
 #Good Plot
+
+The good plot has proper access labels clearly distinguishing latitude and longitude with propely sized anf formated gridelines. The points on the graph are clear and they are also in a legible font. The bathymetry of the ocean floor and the map are properly colored for bathymetry and projected properly onto the map. 
+
+
 ```{r, Setting Up the Good Plot, warning=FALSE}
 
 par(mar=c(2, 2, 1, 1))

@@ -106,7 +106,7 @@ mapText(longitude = stations1$lon+2,
 ```
 
 #Good Plot
-
+ggggggggggggggvhjgvbc vbghcv fgbv lo 
 The good plot has proper access labels clearly distinguishing latitude and longitude with propely sized anf formated gridelines. The points on the graph are clear and they are also in a legible font. The bathymetry of the ocean floor and the map are properly colored for bathymetry and projected properly onto the map. 
 
 

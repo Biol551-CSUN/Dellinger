@@ -14,11 +14,16 @@ output:
 ```{r setup, include=FALSE}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 library(shiny)
 library(tidyverse)
 =======
 install.packages("shiny")
 >>>>>>> 6a3c886f92bfb7ec4d89b8b134ef86546a141c08
+=======
+library(shiny)
+library(tidyverse)
+>>>>>>> 4cc292b729c97c652f2ae79a0af8b9c5ea6c8ea8
 
 ```
 
@@ -29,6 +34,9 @@ install.packages("shiny")
 ```{r}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 4cc292b729c97c652f2ae79a0af8b9c5ea6c8ea8
 ui<-fluidPage(
     sliderInput(inputId = "num", # ID name for the input
                 label = "Choose a number", # Label above the input
@@ -59,6 +67,7 @@ server<-function(input,output){
 }
 
 shinyApp(ui = ui, server = server)
+<<<<<<< HEAD
 =======
 chem.data <- tibble::tribble(
   ~Waypoint,        ~Zone,     ~Lat,      ~Long, ~Site,  ~Season, ~Tide_time,    ~Temp_in,   ~Salinity, ~Phosphate, ~Silicate,  ~NN,   ~pH,         ~TA, ~percent_sgd,
@@ -80,6 +89,8 @@ chem.data %>%
   ggplot() +
   geom_point(x=Zone, y=Temp_in)
 >>>>>>> 6a3c886f92bfb7ec4d89b8b134ef86546a141c08
+=======
+>>>>>>> 4cc292b729c97c652f2ae79a0af8b9c5ea6c8ea8
 
 
 

@@ -6,7 +6,6 @@ library(tidyverse)
 
 ui<-fluidPage(
     sliderInput(inputId = "num", # ID name for the input
-<<<<<<< HEAD
                 label = "Choose a number", # Label above the input
                 value = 25, min = 1, max = 100 # values for the slider
     ), 

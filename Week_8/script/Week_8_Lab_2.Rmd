@@ -1,0 +1,121 @@
+---
+title: "Week 8: Advanced Plotting"
+author: "Robert Dellinger"
+date: "3/15/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Load Libraries 
+```{r}
+library(ncdump)
+library(akima)
+library(ncdf4)
+library(dplyr)
+library(rerddap)
+library(sf)
+library(tidyverse)
+library(lubridate)
+library(oce)
+library(gganimate)
+library(RColorBrewer)
+library(wior)
+library(rgeos)
+library(ggsn)
+library(ggplot2)
+library(ggrepel)
+library(ggmap)
+library(marmap)
+library("devtools")
+devtools::install_github("lugoga/wior")
+devtools::install_github("ropensci/rerddap")
+```
+
+
+# Conversion Function 
+Detailed below is a function to convert lbs to kg and vise versa dependent upon the value input (if else statement)
+
+```{r}
+
+lbs_kg_function = function(mass, unit){ 
+  if(unit == "lbs"){
+    mass = mass*0.45 #converts lbs to kg
+  } else {
+    mass = mass/0.45 #converts kg to lbs
+  }
+  return(mass)
+}
+
+```
+
+
+#Creating a Map/Plot Function 
+
+```{r}
+
+
+par(mar=c(2, 2, 1, 1))
+lonlim = c(-125,-110) #setting limits for longitude and latitude 
+latlim = c(32,40) 
+
+
+#creating the baseplot function for the map with longitude and latitude 
+mp <- function() {
+mapPlot(coastlineWorldFine, 
+        projection="+proj=mill", #setting the projection
+        col="darkolivegreen3", 
+        longitudelim=lonlim, #setting long and lat limits
+        latitudelim=latlim,
+        lonlabels=TRUE,
+        latlabels=TRUE,
+        grid = c(1, 1), #setting the gridlines
+        geographical=4)
+}
+mp()
+
+bathy <- function() {
+b <- as.topo(getNOAA.bathy(-180, 0, 30, 50, keep=TRUE)) #NOAA bathymetry data 
+mp()
+mapImage(b, col=oceColorsGebco, breaks=seq(-4000, 0, 500))
+mapImage(b, col=oceColorsGebco, breaks=seq(-4000, 0, 500), filledContour = TRUE) #setting the colors
+mapPolygon(coastlineWorldFine, col="darkolivegreen3") #coastline of the world filled green
+}
+bathy()
+
+## create points name with their respective locations
+  
+stations1 <- data.frame(name = c("BML", "HMS", "MSB", "CDMSP"), lat = c(38.33, 36.62, 34.36, 33.59), lon = c(-123.05, -121.90, -119.44, -117.87))
+  
+## define the margin of the plot
+par(mar=c(2, 2, 1, 1))
+
+## make a base and bathymetry
+bathy()
+
+mapGrid(1,1)
+
+## overlay the point layer
+mapPoints(longitude = stations1$lon,
+          latitude = stations1$lat, 
+          pch = 20, 
+          cex = 1.00)
+
+mapPoints(longitude = stations2$lon,
+          latitude = stations2$lat, 
+          pch = 20, 
+          cex = 1.00)
+
+## add station name on the map
+mapText(longitude = stations1$lon+0.65,
+        latitude = stations1$lat+0.5,
+        labels = stations1$name, font=2)
+
+mapText(longitude = stations2$lon-0.30,
+        latitude = stations2$lat-0.45,
+        labels = stations2$name, font=2)
+
+```
+

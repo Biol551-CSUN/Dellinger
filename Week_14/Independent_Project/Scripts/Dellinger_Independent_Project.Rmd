@@ -1,0 +1,313 @@
+---
+title: "USING OPEN SOURCE DATA TO VISUALIZE BIOLOGICAL, CHEMICAL, AND PHYSICAL OCEANOGRAPHIC PROCESSES"
+author: "Robert Dellinger"
+date: "5/5/2022"
+output:
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    theme: cerulean
+---
+
+## Load Library
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, fig.path = '../output/')
+
+devtools::install_github("ropensci/rerddap")
+library(oce)
+library(ocedata)
+library(ncdf4)
+library(tidyverse)
+library(lubridate)
+library(ggmap)
+library(marmap)
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(stringr)
+library(plotly)
+
+```
+
+
+# Mapping with the OCE package
+
+## Read in Datasets
+
+The OCE package is a package written by Kelley and Richards (2018) and is focused on oceanographic mapping anf plottign that meets publication quality standards. Here, we use the mapPlot() function to create maps using coastline data and visualize oceanographic processes. 
+
+## Downloading Data
+
+First we will read in data from the oce package using the data() function 
+
+```{r}
+
+Coastline <- data("coastlineWorld") #coastline data
+Coastline_Medium <- data("coastlineWorldMedium") #medium-scale coastline data
+Coastline_Fine <- data("coastlineWorldFine") #fine-scale-scale coastline data
+Topography <- data("topoWorld") #loading in topography data
+Bathymetry <- as.topo(getNOAA.bathy(-180, 0, 0, 90)) #coordinates for bathymetry data from NOAA (Northern Hemisphere)
+
+```
+
+# Creating a Map Function 
+
+Using the map function from the oce package we will create a simple map
+
+```{r fig.align=, fig.height=3, fig.width=4, warning=FALSE}
+
+## setting the map limits
+par(mar=c(2, 2, 2, 2))
+lonlim = c(-121,-117) # longitude
+latlim = c(33,35) # latitude
+
+#Creating a Map function
+map <- function() {
+  mapPlot(coastlineWorldFine, #using fine-scale data
+        projection="+proj=mill", #setting the projection type
+        col="grey", #setting colors,
+        longitudelim=lonlim, 
+        latitudelim=latlim,
+        lonlabels=TRUE,
+        latlabels=TRUE,
+        grid=c(1, 1),
+        geographical=4,
+        clip=TRUE)
+  mapGrid(dlongitude=1, dlatitude=1, col="black", lty=3)
+}
+
+
+#Creating a Map Text Overlay Function
+maptext <- function() {
+  
+# creating points on a map with names and the respective locations
+site = data.frame(name = c("Leo Carrillo, Malibu, CA"),
+                  lon = c(-118.9279),
+                  lat = c(34.0622))
+
+# Overlaying points
+mapPoints(longitude = site$lon, #placing points on map using longitude
+          latitude = site$lat, #placing points on map using latitude
+          pch = 20, 
+          cex = 1.75) #point size
+
+#Overlaying text
+mapText(longitude = site$lon+.65, #map text location long and lat
+        latitude = site$lat+.20, 
+        labels = site$name,
+        cex = 1.2, #font size
+        family = "Times New Roman") # changing font family
+
+## adding a scale bar
+mapScalebar(x = "topright", y = NULL, length = 100, col = "black") 
+}
+
+map()
+maptext()
+
+```
+
+# Creating a Map with Bathymetry and Topography
+
+## Creating a Map Function with Bathymetry
+
+We will now create a map that mimics the depth of the ocean floor using our previous map function. The provided color palettes in the package can be used to visualize oceanographic phenomena such as bathymetry. 
+
+```{r, warning=FALSE, fig.align=, fig.height=3, fig.width=4, warning=FALSE}
+
+## setting the map limits
+par(mar=c(2, 2, 2, 2))
+lonlim = c(-121,-117) # longitude
+latlim = c(33,35) # latitude
+
+#adding in bathymetry to overlay the map function
+bathymetry.map <- function() {
+    mapPlot(coastlineWorldFine, #using fine-scale data
+        projection="+proj=mill", #setting the projection type
+        col="darkolivegreen3", #setting colors
+        bg="blue",
+        lonlabels=TRUE,
+        latlabels=TRUE,
+        longitudelim=lonlim, 
+        latitudelim=latlim,
+        grid = c(1,1), # gridsize
+        geographical=4,
+        clip=TRUE)
+  mapImage(Bathymetry, col=oceColorsGebco, breaks=seq(-6000, 0, 500))
+  mapImage(Bathymetry, col=oceColorsGebco, breaks=seq(-6000, 0, 500), filledContour = TRUE) #oce contour gradient
+  mapPolygon(coastlineWorldFine, col="darkolivegreen3") # overlay green topography
+  mapGrid(dlongitude=1, dlatitude=1, col="black", lty=3)
+}
+
+bathymetry.map()
+maptext()
+
+```
+
+
+
+# Creating a Map with overlayed SST data
+
+We will now create a map that mimics that shows us the sea surface temperature of the ocean and use the provided temeprature color palette to visualize differences in ocean temperature. NOAA and NASA provide open source data for marine biology and oceanography data that can be used for creating visuals. For this portion we will use data downloaded from the Group for High Resolution Sea Surface Temperature (GHRSST) which has entire data sets of regional and global data linked here [https://www.ghrsst.org/]. The dataset is provided in a netcdf format so we will have to first read in the data using the nc_open function from the netcdf package (Pierce 2017) prior to graphing. 
+
+We will download sea surface temperature (SST) analysis data provided by NOAA which provides a combination of daily satellite and in situ temperature temperature measurements on a global level. We will use data from August 1, 2018, the day of the hottest observed SST by Scripps Institution of Oceanography since the previous record set in 1931. 
+
+## Reading in Open Source SST Data from NOAA and NASA 
+
+```{r}
+
+## Opening downloaded data from NOAA 
+sst.data.2018 <- nc_open("/Users/robertdellinger/Documents/Dellinger/Week_14/Independent_Project/Data/SST_08_01_2018.nc")
+
+## extract the longitude variable
+sst.lon = ncvar_get(sst.data.2018, "lon")
+## extract the latitude variable
+sst.lat = ncvar_get(sst.data.2018, "lat")
+## extract sst variable
+sst = ncvar_get(sst.data.2018, "analysed_sst")
+
+## Kelvin to Degree celsius and calibrate
+sst = sst-273.149993896484
+   
+```
+
+## Creating a Map Function with SST
+
+```{r,  fig.width=2.5, fig.height=3.5, fig.align = "center"}
+
+## setting the map limits
+par(mar=c(2, 2, 1, 1)) # margins
+lonlim = c(-125,-116) # longitude
+latlim = c(33.5,39.5) # latitude
+templim = c(10,25) #temperature limits in celsisus
+
+## draw palette (must be done before plotting)
+drawPalette(zlim = templim, 
+            zlab = "Temperature (°C)",
+            col=oce.colorsJet, #using the oce package temperature colors
+            at = seq(10,25), 
+            pos = 1)
+
+#adding in sst to overlay the map function
+sst.map <- function() {
+  bathymetry.map()
+  mapImage(longitude = sst.lon, latitude = sst.lat, z = sst, zlim = templim, col = oceColorsJet(120)) #overlay sst & contour
+  mapImage(longitude = sst.lon, latitude = sst.lat, z = sst, zlim = templim, col = oceColorsJet(120), filledContour = TRUE) 
+  mapPolygon(coastlineWorldFine, col="darkolivegreen3", fillOddEven = TRUE) # overlay green topography
+  mapGrid(dlongitude=1, dlatitude=1, col="black", lty=3) ## adding a map grid
+}
+
+#creating a second map text function 
+maptext2 <- function() {
+## creating points on a map with names and the respective locations
+site = data.frame(name = c("Leo Carrillo", "Bodega Bay"),
+                      lon = c(-118.9279, -123.0481),
+                      lat = c(34.0622, 38.3332))
+mapPoints(longitude = site$lon, #placing points on map using longitude
+          latitude = site$lat, #placing points on map using latitude
+          pch = 20, 
+          cex = 1.75) #point size
+#Overlaying text
+mapText(longitude = site$lon+1.25, #map text location long and lat
+        latitude = site$lat+.75, 
+        labels = site$name,
+        cex = 1.1, #font size
+        family = "Times New Roman") # changing font family
+mapScalebar(x = "topright", y = NULL, length = 250, col = "black") ## adding a scale bar
+}
+
+sst.map()
+maptext2()
+
+
+```
+
+# Visualizing Time Series Data
+
+
+Data was downloaded from NOAA Environmental Research Division Data Access Program (EDRAPP) at a Southern California Coastal Ocean Observation Station (SCCOOS) linked here [https://sccoos.org/]. Data was downloaded from the station at the Santa Monica Pier. This data provides us with the SST measurements taken at frequent intervals for the nearshore coastal ocean of the Los Angeles region. 
+
+Below we read in the packages using the nc_open() functionand extract time and SST variables from the data set
+
+## Load in Data
+```{r}
+
+sccoss.data <- read_csv("/Users/robertdellinger/Documents/Dellinger/Week_14/Independent_Project/Data/SCCOSS_SST_LA_01012012_01012022.csv")
+
+names(sccoss.data) <- c("datetime","SST")
+
+```
+
+## Data Wrangling 
+
+```{r}
+
+#clean the data
+sccoss.data.clean  <- sccoss.data[-1,] %>% #remove first column
+  mutate(datetime = str_remove(datetime, "Z"), #remove z from string
+         date = as.Date(ymd(str_split_fixed(datetime, "T", n=Inf)[,1])), #split string into date
+         time= str_split_fixed(datetime, "T", n=Inf)[,2], #split string into time
+         SST = as.numeric(SST)) %>%
+  filter(SST>10,
+         SST<30) %>%
+  select("date", "SST") 
+
+sccoss.summary <- sccoss.data.clean %>% 
+  group_by(date)%>%
+  summarise(SST.mean = mean(SST, na.rm=TRUE),
+            SST.sd = sd(SST, na.rm=TRUE),
+            SST.min = min(SST, na.rm=TRUE),
+            SST.max = max(SST, na.rm=TRUE))
+
+sccoss.dataset <- full_join(sccoss.data.clean, sccoss.summary, by="date")
+
+sccoss.timeseries <- sccoss.dataset %>% 
+  filter(date < ymd("2022-01-01"),
+         date > ymd("2019-01-01"))
+
+```
+
+
+```{r}
+
+## make the plot
+sst.plot <- ggplot(sccoss.timeseries, aes(x=date, y=SST.mean)) +
+  geom_line(aes(x=date, y=SST.mean), color="darkcyan", alpha=0.5) +
+  geom_smooth(span=0.25, se=FALSE, color="darkcyan") +
+  geom_ribbon(aes(ymin=SST.min, ymax=SST.max), fill="darkcyan", alpha=0.1)+
+  ylab("Sea Surface Temperature (°C)") + 
+  xlab("Date") +
+labs(title = "Mean Sea Surface Temperature in Los Angeles, CA", subtitle = "Maximum, Minimum, & Mean SST Between 2019 & 2022 
+(Data: Southern California Coastal Ocean Observation Station, Santa Monica Pier)") +
+  theme_bw(base_size = 9)
+  
+sst.plot
+
+```
+
+## Interactive Plot for Temperature
+
+Using plotly to make the data interactive 
+```{r}
+
+ggplotly(sst.plot) %>% plotly::config(displayModeBar = F) 
+
+
+```
+
+
+
+
+# References
+
+Kelley, Dan. 2015. Ocedata: Oceanographic Datasets for Oce. https://CRAN.R-project.org/package=ocedata.
+
+Kelley, Dan, and Clark Richards. 2018. Oce: Analysis of Oceanographic Data. https://CRAN.R-project.org/package=oce.
+
+R Core Team. 2018. R: A Language and Environment for Statistical Computing. Vienna, Austria: R Foundation for Statistical Computing. https://www.R-project.org/.
+
+Pierce, David. 2017. Ncdf4: Interface to Unidata netCDF (Version 4 or Earlier) Format Data Files. https://CRAN.R-project.org/package=ncdf4.
+
+
+

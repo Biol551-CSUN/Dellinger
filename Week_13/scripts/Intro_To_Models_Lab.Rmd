@@ -1,0 +1,35 @@
+---
+title: "Week 12: Intro to Models"
+author: "Robert Dellinger"
+date: "4/28/2022"
+output:
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    theme: cerulean
+---
+
+## Load Library
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.path = '../output/')
+
+library(tidyverse)
+library(here)
+library(palmerpenguins)
+library(broom)
+library(performance) 
+library(modelsummary)
+library(tidymodels)
+
+
+```
+
+#Lab
+You have a set of 4 .csv files in data/homework. Each of these files is a timeseries of temperature and light data collected in tide pools in Oregon by Jenn Fields. Your goal is to bring in all 4 files and calculate the mean and standard deviation of both temperature (Temp.C) and light (Intensity.lux) for each tide pool. Use both a for loop and map() functions in your script. (Basically, do it twice). Due Tuesday at 1pm. 
+
+```{r}
+
+
+```
+

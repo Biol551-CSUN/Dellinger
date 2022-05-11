@@ -1,0 +1,124 @@
+---
+title: USING OPEN SOURCE DATA TO VISUALIZE BIOLOGICAL, CHEMICAL, AND PHYSICAL OCEANOGRAPHIC
+  PROCESSES
+author: "Robert Dellinger"
+date: "5/5/2022"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+    theme: cerulean
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, fig.algin="center", fig.path = '../output/')
+
+devtools::install_github("ropensci/rerddap")
+library(oce)
+library(ocedata)
+library(ncdf4)
+library(tidyverse)
+library(lubridate)
+library(tidync)
+library(dplyr)
+library(marmap)
+library(ggplot2)
+library(ggmap)
+library(gganimate)
+library(stringr)
+library(plotly)
+library(sf)
+library(spData)
+library(rerddap)
+library(raster)
+library(mapdata)
+
+```
+
+
+# Plotting Using NOAA ERDAPP Data 
+
+For this portion we will use NOAA servers to download monthly mean temperatures and visualize data using a boxplot. Data can either be downloaded by using the rerddap package or the NOAA online repository. We will clean the data by selecting for the year 2021 and then the longitudes and latitudes of the Southern California Region. Then, we will average SST per month and create an animated plot to visualize changes between months.
+
+[Data Linked Here](https://psl.noaa.gov/repository/entry/show?entryid=cac1c2a6-a864-4409-bb77-1fdead8eeb6e)
+
+Available ERDDAP data can also be pulled into R using the servers() function 
+
+## Data Wrangling
+
+```{r, Data Wrangling SST, warning=FALSE}
+
+sst.file <- tidync("/Users/robertdellinger/Documents/Dellinger/Week_14/Independent_Project/Data/sst.mnmean.nc") 
+sst.tibble <- hyper_tibble(sst.file,  na.rm = FALSE) #turnning nc into tibble
+
+sst.data <- sst.tibble  %>%  
+  mutate(date=as.Date(time, origin="1800-1-1 00:00:00"),
+         day = day(date),  # save dates as intergers 
+         month = month(date) %>% as.integer(),
+         year = year(date) %>% as.integer(),
+         sst=as.numeric(sst)) %>%  #converting dates 
+  filter(date >= dmy(010121), date <= dmy(010122),
+         lat > 30, lat < 35, #lat limits
+         lon > 290, lon < 310,
+         year ==2021) %>% #lon limits
+  dplyr::select(date, month, lon, lat, sst)
+  
+sst.data = as.data.frame(sst.data) #convert to data frame
+
+## group sst based on longitude, latitude and month
+sst.month = sst.data %>% 
+  group_by(lon,lat,month) %>% # selected for lat, long, and month
+  summarise(sst = mean(sst, na.rm = TRUE))
+
+## ungroup grouped data frame
+sst.month = sst.data %>% ungroup()
+
+```
+
+# Creating an Animated Temperature Plot for the Southern California Region
+
+Here we use gganimate and ggplot2 to create a animated boxplot using mean temperature data for the Southern California Region. 
+
+
+```{r, Data Wrangling Monthly Variation of Temperature, fig.align="center"}
+
+animatedplot <- ggplot(data =sst.month, #ggplot sst monthly data
+       aes(x = month, y = sst, fill = as.factor(month)))+
+  geom_boxplot(show.legend = FALSE)+ #create boxplot
+  scale_fill_brewer(palette = "Paired")+
+  cowplot::theme_cowplot()+ 
+  scale_x_continuous(breaks = 1:12)+
+  ylab("Sea Surface Temperature (°C)")+  #add labels
+  xlab("Month") +
+  labs(title = "{closest_state}")+
+  transition_states(month, transition_length = 20, #transition time and month
+                    state_length = 2, wrap = TRUE) + #transition wrap
+  ease_aes('linear') +
+  shadow_mark()
+
+```
+
+
+```{r, Monthly Variation of Temperature in Southern California Boxplot}
+
+knitr::include_graphics("/Users/robertdellinger/Documents/Dellinger/Week_14/Independent_Project/Output/Animated Boxplot Final.gif")
+
+```
+
+# References 
+
+Grolemund, G., & Wickham, H. (2011). Dates and times made easy with lubridate. Journal of Statistical Software, 40(3), 1–25. Retrieved from http://www.jstatsoft.org/v40/i03/
+
+Kelley, Dan. 2015. Ocedata: Oceanographic Datasets for Oce. https://CRAN.R-project.org/package=ocedata.
+
+Kelley, Dan, and Clark Richards. 2018. Oce: Analysis of Oceanographic Data. https://CRAN.R-project.org/package=oce.
+
+R Core Team. 2018. R: A Language and Environment for Statistical Computing. Vienna, Austria: R Foundation for Statistical Computing. https://www.R-project.org/.
+
+Richard W. Reynolds, Viva F. Banzon, and NOAA CDR Program (2008): NOAA Optimum Interpolation 1/4 Degree Daily Sea Surface Temperature (OISST) Analysis, Version 2. [indicate subset used]. NOAA National Centers for Environmental Information. http://doi.org/doi:10.7289/V5SQ8XB5 
+
+Pedersen, T. L., & Robinson, D. (2017). Gganimate: A grammar of animated graphics. Retrieved from http://github.com/thomasp85/gganimate
+
+Wickham, H. (2016). Ggplot2: Elegant graphics for data analysis. Springer-Verlag New York. Retrieved from http://ggplot2.org
+
+Pierce, David. 2017. Ncdf4: Interface to Unidata netCDF (Version 4 or Earlier) Format Data Files. https://CRAN.R-project.org/package=ncdf4.

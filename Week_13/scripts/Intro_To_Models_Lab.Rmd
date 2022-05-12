@@ -16,19 +16,71 @@ knitr::opts_chunk$set(echo = TRUE, fig.path = '../output/')
 
 library(tidyverse)
 library(here)
-library(palmerpenguins)
-library(broom)
 library(performance) 
 library(modelsummary)
 library(tidymodels)
-
+#library(purr)
 
 ```
 
 #Lab
-You have a set of 4 .csv files in data/homework. Each of these files is a timeseries of temperature and light data collected in tide pools in Oregon by Jenn Fields. Your goal is to bring in all 4 files and calculate the mean and standard deviation of both temperature (Temp.C) and light (Intensity.lux) for each tide pool. Use both a for loop and map() functions in your script. (Basically, do it twice). Due Tuesday at 1pm. 
+timeseries of temperature and light data collected in tide pools in Oregon by Jenn Fields. 
+- bring in all 4 files and calculate the mean and standard deviation of both temperature (Temp.C) and light (Intensity.lux) for each tide pool. 
+- Use both a for loop and map() functions in your script. (Basically, do it twice). Due Tuesday at 1pm. 
 
+# Download Data 
 ```{r}
+
+
+TP1 <- read_csv(here("Week_13","Data", "TP1.csv"))
+TP2 <- read_csv(here("Week_13", "Data", "TP2.csv"))
+TP3 <- read_csv(here("Week_13", "Data", "TP3.csv"))
+TP4 <- read_csv(here("Week_13", "Data", "TP4.csv"))
+
+data.full <- full_join(TP1, TP2)
+data2.full <- full_join(TP3, TP4)
+dataU <- full_join(data.full, data2.full)
+
+#glimpse(dataU)
+```
+
+# Creating a loop 
+
+```{r Loop}
+
+data.file <- here("Week_13", "data") # Creating a path 
+files <- dir(path = data.file, pattern = ".csv") # Direct path 
+filesU <- dir(path = data.file, pattern = ".csv", full.names = TRUE) # full name for map function
+
+# empty data frame 
+temp.light.dataframe <- data.frame(matrix(nrow = length(files), ncol = 5)) 
+colnames(temp.light.dataframe) <- c("file", "mean_temp", "sd_temp", "mean_light", "sd_light") #naming columns in the data set 
+
+for (i in 1:length(files)) { 
+  Rdata <- read_csv(here(data.file, files[i])) #reading in files
+  temp.light.dataframe$file[i]<-files[i] # new dataframe
+  temp.light.dataframe$mean_temp[i]<- mean(Rdata$Temp.C, na.rm = TRUE) #calculate temp mean
+  temp.light.dataframe$sd_temp[i]<- sd(Rdata$Temp.C, na.rm = TRUE) # calculate sd 
+  temp.light.dataframe$mean_light[i]<- mean(Rdata$Intensity.lux, na.rm = TRUE) # light mean
+  temp.light.dataframe$sd_light[i]<- sd(Rdata$Intensity.lux, na.rm = TRUE) # calculate sd
+}
+
+glimpse(temp.light.dataframe)
+```
+# Creating a map
+
+```{r Map Using Purr}
+
+# using purrr package 
+#map <- filesU %>% # new data frame
+ # set_names() %>% 
+  #map_df(read_csv, .id = "file") %>% 
+#  mutate(file=gsub(".csv","",basename(file))) %>% # removes name/path
+ # group_by(file) %>% # groups for next function
+  #summarise(mean_temp = mean(Temp.C, na.rm = TRUE), # calculate mean
+    #        std_temp= sd(Temp.C, na.rm = TRUE), # calculate standard deviation
+     #       mean_light = mean(Intensity.lux, na.rm = TRUE), #calculate mean
+      #      std_light= sd(Intensity.lux, na.rm = TRUE)) # calculate standard deviation)
 
 
 ```

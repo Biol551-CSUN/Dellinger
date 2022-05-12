@@ -1,0 +1,67 @@
+---
+title: "Week_12_Lab"
+author: "Robert Dellinger"
+date: "5/11/2022"
+output: html_document
+---
+
+For today's lab assignment I will be working with the intertidal data sets 
+
+# Libraries 
+```{r, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(here)
+library(janitor)
+library(forcats)
+library(dplyr)
+library(stringr)
+```
+# Data 
+```{r, warning=FALSE, message=FALSE}
+
+intertidaldata.latitude <- read_csv(here("Week_12/Data", "intertidaldata_latitude.csv"))
+intertidal.data <- read_csv(here("Week_12/Data", "intertidaldata.csv"))
+
+
+```
+# Wrangling and Graphing 
+```{r warning=FALSE, message=FALSE}
+
+intertidal.data.clean <- intertidal.data  %>% 
+  clean_names() %>% # clean variable names
+  mutate(tide=quadrat,
+         tide=str_replace_all(tide, fixed(" "), ""),
+         tide=str_replace_all(tide, "1", ""))
+  
+intertidaldata.latitude.clean <- intertidaldata.latitude %>% 
+  clean_names()
+
+intertidal <- full_join(intertidal.data.clean, intertidaldata.latitude.clean) ## joining data together 
+
+intertidal.subset <- intertidal %>% 
+  select(latitude, site, tide, mussels, whelks_counts, anemone) %>% 
+  group_by(latitude, site) %>% 
+    summarise(mean_mussels=mean(mussels, na.rm=TRUE),
+              mean_whelks=mean(whelks_counts, na.rm=TRUE),
+              mean_anemone=mean(anemone, na.rm=TRUE)) %>% 
+  mutate(across(where(is.numeric), round, 1),
+                mean_mussels= as.character(mean_mussels),
+           mean_whelks=as.character(mean_whelks),
+           mean_anemone=as.character(mean_anemone))
+
+         
+```
+
+
+```{r warning=FALSE, message=FALSE}
+
+#  factor latitude
+ggplot(intertidal.subset, aes(x= fct_inorder(mean_mussels, latitude), y =latitude)) + 
+  geom_point() +
+  labs(x = "Mean Number of Mussels", y = "Latitude", 
+       title = "Mean Number of Mussels Across Latitude")+
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+```
